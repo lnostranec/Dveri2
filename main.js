@@ -53,6 +53,35 @@
   }
 })();
 
+(function initSiteScrollLock() {
+  var lockCount = 0;
+  var savedScrollY = 0;
+
+  function lock() {
+    if (lockCount === 0) {
+      savedScrollY = window.scrollY || window.pageYOffset || 0;
+      document.documentElement.classList.add("is-scroll-locked");
+      document.body.classList.add("is-scroll-locked");
+      document.body.style.top = -savedScrollY + "px";
+    }
+    lockCount += 1;
+  }
+
+  function unlock() {
+    if (lockCount <= 0) return;
+    lockCount -= 1;
+    if (lockCount > 0) return;
+    var y = savedScrollY;
+    document.body.style.top = "";
+    document.documentElement.classList.remove("is-scroll-locked");
+    document.body.classList.remove("is-scroll-locked");
+    window.scrollTo({ top: y, left: 0, behavior: "instant" });
+  }
+
+  window.hollywoodLockScroll = lock;
+  window.hollywoodUnlockScroll = unlock;
+})();
+
 (function () {
   var menu = document.querySelector(".mobile-menu");
   if (!menu) return;
@@ -69,12 +98,14 @@
       menu.classList.add("is-open");
     });
     document.body.classList.add("mobile-menu-open");
+    if (window.hollywoodLockScroll) window.hollywoodLockScroll();
   }
 
   function closeMenu() {
     menu.classList.remove("is-open");
     menu.setAttribute("aria-hidden", "true");
     document.body.classList.remove("mobile-menu-open");
+    if (window.hollywoodUnlockScroll) window.hollywoodUnlockScroll();
     setTimeout(function () {
       if (!menu.classList.contains("is-open")) {
         menu.hidden = true;
@@ -123,10 +154,26 @@
   var searchCloseTimer = null;
   var OVERLAY_MS = 320;
 
-  function finishSearchClose() {
+  function blockSearchBackgroundScroll(e) {
+    if (!document.documentElement.classList.contains("search-overlay-open")) return;
+    if (overlay && e.target && overlay.contains(e.target)) return;
+    e.preventDefault();
+  }
+
+  function bindSearchScrollLock() {
+    window.addEventListener("wheel", blockSearchBackgroundScroll, { passive: false });
+    window.addEventListener("touchmove", blockSearchBackgroundScroll, { passive: false });
+  }
+
+  function unbindSearchScrollLock() {
+    window.removeEventListener("wheel", blockSearchBackgroundScroll);
+    window.removeEventListener("touchmove", blockSearchBackgroundScroll);
+  }
+
+  function releaseSearchState() {
+    unbindSearchScrollLock();
     document.body.classList.remove("search-overlay-open");
     document.documentElement.classList.remove("search-overlay-open");
-    overlay.hidden = true;
   }
 
   function openSearchOverlay(e) {
@@ -137,8 +184,9 @@
     }
     overlay.hidden = false;
     overlay.setAttribute("aria-hidden", "false");
-    document.body.classList.add("search-overlay-open");
     document.documentElement.classList.add("search-overlay-open");
+    document.body.classList.add("search-overlay-open");
+    bindSearchScrollLock();
     requestAnimationFrame(function () {
       overlay.classList.add("is-open");
     });
@@ -148,10 +196,11 @@
     if (!overlay.classList.contains("is-open")) return;
     overlay.classList.remove("is-open");
     overlay.setAttribute("aria-hidden", "true");
+    releaseSearchState();
     searchCloseTimer = setTimeout(function () {
       searchCloseTimer = null;
       if (!overlay.classList.contains("is-open")) {
-        finishSearchClose();
+        overlay.hidden = true;
       }
     }, OVERLAY_MS);
   }
@@ -695,9 +744,30 @@
     if (consentCheckbox) consentCheckbox.classList.remove("input--error");
   }
 
-  function finishModalClose() {
+  function blockModalBackgroundScroll(e) {
+    if (!document.documentElement.classList.contains("consult-modal-open")) return;
+    var dialog = modal.querySelector(".consult-modal__dialog");
+    if (dialog && e.target && dialog.contains(e.target)) return;
+    e.preventDefault();
+  }
+
+  function bindModalScrollLock() {
+    window.addEventListener("wheel", blockModalBackgroundScroll, { passive: false });
+    window.addEventListener("touchmove", blockModalBackgroundScroll, { passive: false });
+  }
+
+  function unbindModalScrollLock() {
+    window.removeEventListener("wheel", blockModalBackgroundScroll);
+    window.removeEventListener("touchmove", blockModalBackgroundScroll);
+  }
+
+  function releaseModalState() {
+    unbindModalScrollLock();
     document.body.classList.remove("consult-modal-open");
     document.documentElement.classList.remove("consult-modal-open");
+  }
+
+  function resetModalForm() {
     modalFormSubmitted = false;
     if (form) form.reset();
     clearModalFieldErrors();
@@ -715,8 +785,9 @@
     syncModalFieldState(nameInput);
     syncModalFieldState(phoneInput);
     modal.setAttribute("aria-hidden", "false");
-    document.body.classList.add("consult-modal-open");
     document.documentElement.classList.add("consult-modal-open");
+    document.body.classList.add("consult-modal-open");
+    bindModalScrollLock();
     requestAnimationFrame(function () {
       modal.classList.add("is-open");
     });
@@ -730,7 +801,8 @@
     modal.setAttribute("aria-hidden", "true");
     modalCloseTimer = setTimeout(function () {
       modalCloseTimer = null;
-      finishModalClose();
+      releaseModalState();
+      resetModalForm();
     }, OVERLAY_MS);
   }
 
@@ -740,14 +812,7 @@
     });
   }
 
-  if (backdrop) backdrop.addEventListener("click", closeModal);
   if (closeBtn) closeBtn.addEventListener("click", closeModal);
-
-  document.addEventListener("keydown", function (e) {
-    if (e.key === "Escape" && modal.classList.contains("is-open")) {
-      closeModal();
-    }
-  });
 
   if (form) {
     form.addEventListener("submit", function (e) {
