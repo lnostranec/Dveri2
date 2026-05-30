@@ -14,7 +14,7 @@
       rel="stylesheet"
       href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css"
     />
-    <link rel="stylesheet" href="style.css?v=421" />
+    <link rel="stylesheet" href="style.css?v=434" />
   </head>
   <body id="top">
     <header class="site-header">
@@ -59,7 +59,7 @@
         <div class="site-header__end header-tools">
           <div class="header-tools__contact">
             <a class="header-tools__max" href="#" data-open-consult-modal aria-label="Написать в MAX">MAX</a>
-            <span class="header-tools__phone" aria-label="+7 987 285 62 70">
+            <button type="button" class="header-tools__phone" data-open-consult-modal aria-label="Заказать звонок">
               <span class="header-tool-block header-tool-block--phone">
                 <svg class="header-tool-block__frame" viewBox="0 0 48 47" width="48" height="47" aria-hidden="true" preserveAspectRatio="none"><rect class="header-tool-block__frame-shape" x="0.5" y="0.5" width="47" height="46" rx="0" stroke="currentColor"/></svg>
                 <span class="header-tool-block__inner">
@@ -78,7 +78,7 @@
                   </svg>
                 </span>
               </span>
-              <span class="header-tools__phone-text">+7 987 285 62 70</span></span>
+              <span class="header-tools__phone-text">+7 987 285 62 70</span></button>
           </div>
           <button type="button" class="header-tools__search header-tools__icon" aria-label="Поиск">
             <span class="header-tool-block header-tool-block--search">
@@ -237,47 +237,65 @@
             </a>
           </div>
           <figure class="hero-intro__feature" id="heroFeature">
-            <a class="hero-intro__feature-link hero-intro__feature-link--linked" href="#" aria-label="Коллекция Примьера">
-              <div class="hero-intro__feature-slides" aria-live="polite">
-                <div class="hero-intro__feature-slide is-active" data-caption="Коллекция Примьера" data-href="#">
-                  <img
-                    src="assets/hero2.webp"
-                    width="954"
-                    height="923"
-                    alt="Интерьер с дверью коллекции Примьера"
-                    fetchpriority="high"
-                  />
-                </div>
-                <div class="hero-intro__feature-slide" data-caption="Коллекция Неоклассика" data-href="#">
-                  <img
-                    src="assets/Dveri1.webp"
-                    width="880"
-                    height="760"
-                    alt="Дверь коллекции Неоклассика в интерьере"
-                    loading="lazy"
-                  />
-                </div>
-                <div class="hero-intro__feature-slide" data-caption="Коллекция Классика" data-href="#">
-                  <img
-                    src="assets/Dveri2.webp"
-                    width="880"
-                    height="760"
-                    alt="Дверь коллекции Классика"
-                    loading="lazy"
-                  />
-                </div>
-                <div class="hero-intro__feature-slide" data-caption="Коллекция Современный стиль" data-href="#">
-                  <img
-                    src="assets/bbb.webp"
-                    width="880"
-                    height="760"
-                    alt="Дверь в современном интерьере"
-                    loading="lazy"
-                  />
-                </div>
-              </div>
-              <span class="hero-intro__feature-caption">Коллекция Примьера</span>
-            </a>
+            <!-- WP: у каждого слайда меняйте href (сейчас заглушка kollektsiya-premera.html) -->
+            <div class="hero-intro__feature-slides" aria-live="polite">
+              <a
+                class="hero-intro__feature-slide is-active"
+                href="kollektsiya-premera.html"
+                aria-label="Коллекция Примьера"
+              >
+                <img
+                  src="assets/hero2.webp"
+                  width="954"
+                  height="923"
+                  alt="Интерьер с дверью коллекции Примьера"
+                  fetchpriority="high"
+                />
+                <span class="hero-intro__feature-caption">Коллекция Примьера</span>
+              </a>
+              <a
+                class="hero-intro__feature-slide"
+                href="kollektsiya-premera.html"
+                aria-label="Коллекция Неоклассика"
+              >
+                <img
+                  src="assets/Dveri1.webp"
+                  width="880"
+                  height="760"
+                  alt="Дверь коллекции Неоклассика в интерьере"
+                  loading="lazy"
+                />
+                <span class="hero-intro__feature-caption">Коллекция Неоклассика</span>
+              </a>
+              <a
+                class="hero-intro__feature-slide"
+                href="kollektsiya-premera.html"
+                aria-label="Коллекция Классика"
+              >
+                <img
+                  src="assets/Dveri2.webp"
+                  width="880"
+                  height="760"
+                  alt="Дверь коллекции Классика"
+                  loading="lazy"
+                />
+                <span class="hero-intro__feature-caption">Коллекция Классика</span>
+              </a>
+              <a
+                class="hero-intro__feature-slide"
+                href="kollektsiya-premera.html"
+                aria-label="Коллекция Современный стиль"
+              >
+                <img
+                  src="assets/bbb.webp"
+                  width="880"
+                  height="760"
+                  alt="Дверь в современном интерьере"
+                  loading="lazy"
+                />
+                <span class="hero-intro__feature-caption">Коллекция Современный стиль</span>
+              </a>
+            </div>
             <div class="hero-intro__nav">
               <button
                 type="button"
@@ -852,6 +870,6 @@
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js" defer></script>
-    <script src="main.js?v=51" defer></script>
+    <script src="main.js?v=65" defer></script>
   </body>
 </html>
