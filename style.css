@@ -1296,7 +1296,7 @@ body.mobile-menu-open {
     grid-template-columns:
       minmax(0, calc((100% - var(--hero-col-gap, 0px)) * 488 / 1000 + 15px))
       minmax(0, calc((100% - var(--hero-col-gap, 0px)) * 512 / 1000 - 15px));
-    grid-template-rows: auto;
+    grid-template-rows: minmax(var(--hero-grid-content-h), 1fr);
     column-gap: var(--hero-col-gap);
     align-items: stretch;
     box-sizing: border-box;
@@ -1304,6 +1304,8 @@ body.mobile-menu-open {
   }
 
   .hero-intro__left {
+    display: grid;
+    grid-template-rows: auto auto minmax(0, 1fr);
     min-height: var(--hero-grid-content-h);
     height: auto;
     max-height: none;
@@ -1312,23 +1314,21 @@ body.mobile-menu-open {
   }
 
   .hero-intro__copy {
-    flex: 0 1 auto;
     min-height: 0;
     min-width: 0;
   }
 
   .hero-intro__lead {
-    flex: 0 0 auto;
     white-space: normal;
   }
 
   .hero-intro__media {
-    flex: 0 0 auto;
-    margin-top: auto;
+    min-height: 0;
+    height: 100%;
     width: 100%;
     max-width: min(var(--hero-media-w), 100%);
-    height: auto;
     aspect-ratio: var(--hero-media-ratio);
+    align-self: stretch;
   }
 
   .hero-intro__feature {
@@ -1339,7 +1339,7 @@ body.mobile-menu-open {
     width: 100%;
     min-width: 0;
     height: auto;
-    max-height: none;
+    max-height: var(--hero-grid-content-h);
     aspect-ratio: var(--hero-feature-ratio);
     justify-self: stretch;
     align-self: end;
