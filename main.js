@@ -237,10 +237,13 @@
   var swipeArea = feature.querySelector(".hero-intro__feature-slides") || feature;
   var interactionRoot = featureLink || swipeArea;
   var pointerStartX = 0;
+  var pointerStartY = 0;
   var pointerTracking = false;
   var dragMoved = false;
   var suppressLinkClick = false;
   var swipeThreshold = 40;
+  var axisLockThreshold = 10;
+  var axisLock = null;
   var lastSwipeStepAt = 0;
 
   function isSwipeBlocked(target) {
@@ -250,6 +253,7 @@
   function resetPointerState() {
     pointerTracking = false;
     dragMoved = false;
+    axisLock = null;
     swipeArea.classList.remove("is-dragging");
     unbindWindowPointerHandlers();
   }
@@ -257,7 +261,7 @@
   function finishPointer(clientX) {
     if (!pointerTracking) return;
     var dx = (typeof clientX === "number" ? clientX : pointerStartX) - pointerStartX;
-    if (Math.abs(dx) >= swipeThreshold) {
+    if (axisLock === "x" && Math.abs(dx) >= swipeThreshold) {
       var now = Date.now();
       if (now - lastSwipeStepAt >= 350) {
         suppressLinkClick = true;
@@ -270,7 +274,23 @@
 
   function onWindowPointerMove(e) {
     if (!pointerTracking) return;
-    if (Math.abs(e.clientX - pointerStartX) >= 5) {
+    var dx = e.clientX - pointerStartX;
+    var dy = e.clientY - pointerStartY;
+
+    if (!axisLock) {
+      if (Math.abs(dx) < axisLockThreshold && Math.abs(dy) < axisLockThreshold) {
+        return;
+      }
+      if (Math.abs(dy) > Math.abs(dx)) {
+        resetPointerState();
+        return;
+      }
+      axisLock = "x";
+    }
+
+    if (axisLock !== "x") return;
+
+    if (Math.abs(dx) >= 5) {
       dragMoved = true;
       swipeArea.classList.add("is-dragging");
       if (e.cancelable) e.preventDefault();
@@ -303,7 +323,9 @@
     resetPointerState();
     pointerTracking = true;
     dragMoved = false;
+    axisLock = null;
     pointerStartX = e.clientX;
+    pointerStartY = e.clientY;
     bindWindowPointerHandlers();
   });
 

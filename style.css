@@ -1165,6 +1165,7 @@ body.mobile-menu-open {
 
 .hero-intro__feature-slides.is-dragging {
   cursor: grabbing;
+  touch-action: none;
 }
 
 .hero-intro__feature-slide {
@@ -2982,6 +2983,18 @@ body.mobile-menu-open {
   .hero-intro__media-ext,
   .hero-intro__nav {
     right: 22px;
+  }
+
+  .hero-intro__feature-slides {
+    touch-action: pan-y pinch-zoom;
+  }
+
+  .hero-intro__feature-link {
+    touch-action: pan-y pinch-zoom;
+  }
+
+  .hero-intro__feature-link:has(.hero-intro__feature-slides.is-dragging) {
+    touch-action: none;
   }
 }
 
