@@ -799,9 +799,9 @@
 
     modal.classList.remove("is-open");
     modal.setAttribute("aria-hidden", "true");
+    releaseModalState();
     modalCloseTimer = setTimeout(function () {
       modalCloseTimer = null;
-      releaseModalState();
       resetModalForm();
     }, OVERLAY_MS);
   }

@@ -844,7 +844,17 @@ html.consult-modal-open body::before {
   pointer-events: none;
 }
 
-html.consult-modal-open .site-header,
+html.consult-modal-open .site-header {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  width: 100%;
+  visibility: hidden;
+  pointer-events: none;
+  z-index: 0;
+}
+
 html.is-scroll-locked .site-header {
   position: fixed;
   top: 0;
@@ -853,10 +863,6 @@ html.is-scroll-locked .site-header {
   width: 100%;
   z-index: 2400;
   box-sizing: border-box;
-}
-
-html.consult-modal-open .site-header {
-  pointer-events: none;
 }
 
 .mobile-menu {
@@ -3607,7 +3613,7 @@ html.consult-modal-open .site-header {
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: var(--header-h) 20px 20px;
+  padding: 20px;
   box-sizing: border-box;
   z-index: 2200;
   font-family: var(--font);
@@ -3629,10 +3635,7 @@ html.consult-modal-open .site-header {
 
 .consult-modal__backdrop {
   position: absolute;
-  top: var(--header-h);
-  left: 0;
-  right: 0;
-  bottom: 0;
+  inset: 0;
   background: rgba(0, 0, 0, 0.5);
   opacity: 0;
   transition: opacity var(--overlay-duration) var(--overlay-ease);
