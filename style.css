@@ -5365,6 +5365,10 @@ body.page-katalog.catalog-mega-open .catalog-mega__backdrop {
   --product-config-tab-font-size: 15px;
 }
 
+.door-product-config__tabs-viewport {
+  display: contents;
+}
+
 .door-product-config__tabs {
   display: flex;
   flex-wrap: wrap;
@@ -5748,7 +5752,16 @@ body.page-katalog.catalog-mega-open .catalog-mega__backdrop {
       var(--door-sheet-rows-visible) * var(--door-sheet-variant-h)
       + (var(--door-sheet-rows-visible) - 1) * var(--door-sheet-grid-gap)
     );
-    --door-sheet-chrome-h: calc(10px + 4px + 6px + 4px + 40px + 16px + env(safe-area-inset-bottom, 0px));
+    --door-sheet-drag-h: calc(10px + 4px + 12px);
+    --door-sheet-tabs-h: calc(4px + 33px + 1px);
+    --door-sheet-cards-gap: 16px;
+    --door-sheet-chrome-h: calc(
+      var(--door-sheet-drag-h)
+      + var(--door-sheet-tabs-h)
+      + var(--door-sheet-cards-gap)
+      + 16px
+      + env(safe-area-inset-bottom, 0px)
+    );
     position: fixed;
     inset: 0;
     z-index: 2600;
@@ -5809,8 +5822,9 @@ body.page-katalog.catalog-mega-open .catalog-mega__backdrop {
 
   .door-product-config-sheet__drag {
     flex: 0 0 auto;
+    flex-shrink: 0;
     touch-action: none;
-    padding: 10px 0 8px;
+    padding: 10px 0 12px;
     cursor: grab;
   }
 
@@ -5840,34 +5854,105 @@ body.page-katalog.catalog-mega-open .catalog-mega__backdrop {
     flex-direction: column;
     flex: 1 1 auto;
     min-height: 0;
+    width: 100%;
+    overflow: hidden;
     padding: 0;
   }
 
-  .door-product-config-sheet .door-product-config__tabs {
+  .door-product-config-sheet .door-product-config__tabs-viewport {
     flex: 0 0 auto;
-    gap: 20px;
-    margin-bottom: 16px;
-    padding-top: 4px;
-    border-bottom: 1px solid #e1e1e1;
-    touch-action: pan-x;
+    flex-shrink: 0;
+    width: 100%;
+    min-width: 0;
+    margin-bottom: 0;
+    overflow: visible;
   }
 
-  .door-product-config-sheet .door-product-config__tab[data-tab="glass"] {
+  .door-product-config-sheet .door-product-config__tabs {
+    display: flex;
+    flex-wrap: nowrap;
+    align-items: flex-end;
+    gap: 20px;
+    width: 100%;
+    min-width: 0;
+    margin: 0 0 var(--door-sheet-cards-gap);
+    padding: 4px 0 0;
+    border-bottom: 1px solid #e1e1e1;
+    overflow-x: auto;
+    overflow-y: hidden;
+    -webkit-overflow-scrolling: touch;
+    overscroll-behavior-x: contain;
+    scrollbar-width: none;
+    touch-action: pan-x pinch-zoom;
+  }
+
+  .door-product-config-sheet .door-product-config__tabs::-webkit-scrollbar {
     display: none;
+  }
+
+  .door-product-config-sheet .door-product-config__tab {
+    flex: 0 0 auto;
+    white-space: nowrap;
+    margin-bottom: -1px;
   }
 
   .door-product-config-sheet .door-product-variants__heading {
     display: none;
   }
 
-  .door-product-config-sheet .door-product-config__panels {
+  .door-product-config-sheet .door-product-config__panels-outer {
+    position: relative;
     flex: 1 1 auto;
+    flex-shrink: 0;
     min-height: var(--door-sheet-grid-h);
     height: var(--door-sheet-grid-h);
     max-height: var(--door-sheet-grid-h);
+    margin-top: 0;
+    min-width: 0;
+  }
+
+  .door-product-config-sheet .door-product-config__panels {
+    height: 100%;
+    min-height: 0;
+    max-height: none;
+    margin-top: 0;
     overflow-y: auto;
     -webkit-overflow-scrolling: touch;
     overscroll-behavior: contain;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+  }
+
+  .door-product-config-sheet .door-product-config__panels::-webkit-scrollbar {
+    display: none;
+    width: 0;
+    height: 0;
+  }
+
+  .door-product-config-sheet .door-product-config__scrollbar-rail {
+    position: absolute;
+    top: 0;
+    right: 0;
+    width: 5px;
+    height: 100%;
+    pointer-events: none;
+    z-index: 3;
+    opacity: 0;
+    transition: opacity 0.15s ease;
+  }
+
+  .door-product-config-sheet.is-open
+    .door-product-config__panels-outer.is-scrollable
+    .door-product-config__scrollbar-rail {
+    opacity: 1;
+  }
+
+  .door-product-config-sheet .door-product-config__scrollbar-thumb {
+    width: 100%;
+    background: #353535;
+    border-radius: 999px;
+    min-height: 40px;
+    transform: translateY(0);
   }
 
   .door-product-config-sheet .door-product-config__panel {

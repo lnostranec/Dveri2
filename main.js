@@ -1272,6 +1272,35 @@
 
   var tabs = root.querySelectorAll(".door-product-config__tab");
   var panels = root.querySelectorAll(".door-product-config__panel");
+  var tabsBar = root.querySelector(".door-product-config__tabs");
+
+  if (tabsBar) {
+    var tabsTouchStartX = 0;
+    var tabsTouchStartY = 0;
+
+    tabsBar.addEventListener(
+      "touchstart",
+      function (e) {
+        if (!e.touches || !e.touches[0]) return;
+        tabsTouchStartX = e.touches[0].clientX;
+        tabsTouchStartY = e.touches[0].clientY;
+      },
+      { passive: true }
+    );
+
+    tabsBar.addEventListener(
+      "touchmove",
+      function (e) {
+        if (!e.touches || !e.touches[0]) return;
+        var dx = Math.abs(e.touches[0].clientX - tabsTouchStartX);
+        var dy = Math.abs(e.touches[0].clientY - tabsTouchStartY);
+        if (dx > dy && dx > 6) {
+          e.stopPropagation();
+        }
+      },
+      { passive: true }
+    );
+  }
 
   tabs.forEach(function (tab) {
     tab.addEventListener("click", function () {
@@ -1335,6 +1364,75 @@
   var backdropReadyTimer = null;
   var backdropReady = false;
   var BACKDROP_DELAY_MS = 400;
+  var panelsScrollOuter = null;
+  var panelsScrollRaf = null;
+
+  function getConfigPanelsEl() {
+    return config.querySelector(".door-product-config__panels");
+  }
+
+  function ensurePanelsScrollChrome() {
+    var panels = getConfigPanelsEl();
+    if (!panels) return null;
+
+    var outer = panels.closest(".door-product-config__panels-outer");
+    if (!outer) {
+      outer = document.createElement("div");
+      outer.className = "door-product-config__panels-outer";
+      panels.parentNode.insertBefore(outer, panels);
+      outer.appendChild(panels);
+
+      var rail = document.createElement("div");
+      rail.className = "door-product-config__scrollbar-rail";
+      rail.setAttribute("aria-hidden", "true");
+      var thumb = document.createElement("div");
+      thumb.className = "door-product-config__scrollbar-thumb";
+      rail.appendChild(thumb);
+      outer.appendChild(rail);
+
+      panels.addEventListener("scroll", schedulePanelsScrollSync, { passive: true });
+
+      if (typeof ResizeObserver !== "undefined") {
+        var ro = new ResizeObserver(schedulePanelsScrollSync);
+        ro.observe(panels);
+        outer._panelsScrollRO = ro;
+      }
+    }
+
+    panelsScrollOuter = outer;
+    return outer;
+  }
+
+  function schedulePanelsScrollSync() {
+    if (panelsScrollRaf) return;
+    panelsScrollRaf = requestAnimationFrame(function () {
+      panelsScrollRaf = null;
+      syncPanelsCustomScrollbar();
+    });
+  }
+
+  function syncPanelsCustomScrollbar() {
+    if (!isMobile()) return;
+    var outer = panelsScrollOuter || ensurePanelsScrollChrome();
+    if (!outer) return;
+
+    var panels = outer.querySelector(".door-product-config__panels");
+    var thumb = outer.querySelector(".door-product-config__scrollbar-thumb");
+    if (!panels || !thumb) return;
+
+    var scrollable = panels.scrollHeight > panels.clientHeight + 1;
+    outer.classList.toggle("is-scrollable", scrollable);
+    if (!scrollable) return;
+
+    var ch = panels.clientHeight;
+    var sh = panels.scrollHeight;
+    var thumbH = Math.max(40, (ch / sh) * ch);
+    var maxTop = ch - thumbH;
+    var top = maxTop <= 0 ? 0 : (panels.scrollTop / (sh - ch)) * maxTop;
+
+    thumb.style.height = thumbH + "px";
+    thumb.style.transform = "translateY(" + top + "px)";
+  }
 
   function isMobile() {
     return window.getComputedStyle(openBtn).display !== "none";
@@ -1362,6 +1460,8 @@
       sheetBody.appendChild(config);
     }
     host.hidden = true;
+    ensurePanelsScrollChrome();
+    schedulePanelsScrollSync();
   }
 
   function syncConfigPlacement() {
@@ -1583,6 +1683,9 @@
             setBackdropReady(true);
           }
         }, BACKDROP_DELAY_MS);
+        ensurePanelsScrollChrome();
+        schedulePanelsScrollSync();
+        requestAnimationFrame(schedulePanelsScrollSync);
       });
     });
   }
@@ -1651,7 +1754,17 @@
       closeSheet();
     }
     scheduleSyncConfigPlacement();
+    schedulePanelsScrollSync();
   });
+
+  config.addEventListener("click", function (e) {
+    if (e.target.closest(".door-product-config__tab")) {
+      schedulePanelsScrollSync();
+      requestAnimationFrame(schedulePanelsScrollSync);
+    }
+  });
+
+  window.addEventListener("resize", schedulePanelsScrollSync);
 
   syncConfigPlacement();
 })();
