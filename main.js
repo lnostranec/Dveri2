@@ -1308,6 +1308,354 @@
   });
 })();
 
+(function initDoorProductConfigSheet() {
+  var host = document.getElementById("doorProductConfigHost");
+  var sheet = document.getElementById("doorProductConfigSheet");
+  var sheetBody = document.getElementById("doorProductConfigSheetBody");
+  var openBtn = document.getElementById("doorProductConfigOpen");
+  var config = document.querySelector("[data-door-product-config]");
+  if (!host || !sheet || !sheetBody || !openBtn || !config) return;
+
+  var panel = sheet.querySelector(".door-product-config-sheet__panel");
+  var backdrop = sheet.querySelector(".door-product-config-sheet__backdrop");
+  var sheetCloseTimer = null;
+  var syncPlacementTimer = null;
+  var sheetOpening = false;
+  var SHEET_MS = 360;
+  var mq = window.matchMedia("(max-width: 768px)");
+  var dragZone = sheet.querySelector(".door-product-config-sheet__drag");
+  var drag = {
+    active: false,
+    pointerId: null,
+    startY: 0,
+    currentY: 0,
+    panelHeight: 0,
+  };
+  var snapResetTimer = null;
+  var backdropReadyTimer = null;
+  var backdropReady = false;
+  var BACKDROP_DELAY_MS = 400;
+
+  function isMobile() {
+    return window.getComputedStyle(openBtn).display !== "none";
+  }
+
+  function lockSheetScroll() {
+    document.documentElement.classList.add("door-config-sheet-open");
+  }
+
+  function unlockSheetScroll() {
+    document.documentElement.classList.remove("door-config-sheet-open");
+  }
+
+  function mountConfigDesktop() {
+    host.hidden = false;
+    host.classList.remove("door-product-config-host--sheet-mode");
+    if (config.parentNode !== host) {
+      host.appendChild(config);
+    }
+  }
+
+  function mountConfigMobile() {
+    host.classList.add("door-product-config-host--sheet-mode");
+    if (config.parentNode !== sheetBody) {
+      sheetBody.appendChild(config);
+    }
+    host.hidden = true;
+  }
+
+  function syncConfigPlacement() {
+    if (sheet.classList.contains("is-open") || sheetOpening) return;
+    if (isMobile()) {
+      mountConfigMobile();
+      return;
+    }
+    mountConfigDesktop();
+  }
+
+  function scheduleSyncConfigPlacement() {
+    if (syncPlacementTimer) clearTimeout(syncPlacementTimer);
+    syncPlacementTimer = setTimeout(function () {
+      syncPlacementTimer = null;
+      syncConfigPlacement();
+    }, 120);
+  }
+
+  function resetPanelTransform() {
+    if (!panel) return;
+    panel.style.transition = "";
+    panel.style.transform = "";
+    if (backdrop) backdrop.style.opacity = "";
+  }
+
+  function applyDragOffset(offset, animate) {
+    if (!panel) return;
+    var y = Math.max(0, offset);
+    panel.style.transition = animate ? "" : "none";
+    panel.style.transform = y > 0 ? "translateY(" + y + "px)" : "";
+    if (backdrop && sheet.classList.contains("is-open")) {
+      var h = drag.panelHeight || panel.offsetHeight || 1;
+      backdrop.style.transition = animate ? "" : "none";
+      backdrop.style.opacity = String(Math.max(0, 1 - y / h));
+    }
+  }
+
+  function canStartDrag(target) {
+    return !!(target && target.closest(".door-product-config-sheet__drag"));
+  }
+
+  function clearSnapResetTimer() {
+    if (!snapResetTimer) return;
+    clearTimeout(snapResetTimer);
+    snapResetTimer = null;
+  }
+
+  function stopSheetDragTracking() {
+    document.removeEventListener("pointermove", onSheetPointerMove);
+    document.removeEventListener("pointerup", onSheetPointerEnd);
+    document.removeEventListener("pointercancel", onSheetPointerEnd);
+  }
+
+  function snapPanelOpen() {
+    if (!panel) return;
+    clearSnapResetTimer();
+    sheet.classList.remove("is-dragging");
+    panel.style.transition = "transform 0.25s ease";
+    panel.style.transform = "translateY(0)";
+    if (backdrop) {
+      backdrop.style.transition = "opacity 0.25s ease";
+      backdrop.style.opacity = "";
+    }
+    snapResetTimer = setTimeout(function () {
+      snapResetTimer = null;
+      resetPanelTransform();
+    }, 260);
+  }
+
+  function releaseOpenBtnFocus() {
+    if (openBtn && typeof openBtn.blur === "function") {
+      openBtn.blur();
+    }
+  }
+
+  function setBackdropReady(ready) {
+    backdropReady = ready;
+    sheet.classList.toggle("is-backdrop-ready", ready);
+  }
+
+  function finalizeSheetClose() {
+    sheetOpening = false;
+    sheet.classList.remove("is-open");
+    sheet.setAttribute("aria-hidden", "true");
+    openBtn.setAttribute("aria-expanded", "false");
+    if (panel) {
+      panel.removeAttribute("role");
+      panel.removeAttribute("aria-modal");
+    }
+    unlockSheetScroll();
+    resetPanelTransform();
+    setBackdropReady(false);
+    sheet.hidden = true;
+    releaseOpenBtnFocus();
+  }
+
+  function closeSheetFromDrag() {
+    if (!sheet.classList.contains("is-open") || !panel) return;
+
+    clearSnapResetTimer();
+    stopSheetDragTracking();
+    drag.active = false;
+    drag.pointerId = null;
+    sheet.classList.remove("is-dragging");
+
+    var closeY = drag.panelHeight || panel.offsetHeight || 300;
+    panel.style.transition = "transform 0.3s ease";
+    panel.style.transform = "translateY(" + closeY + "px)";
+    if (backdrop) {
+      backdrop.style.transition = "opacity 0.3s ease";
+      backdrop.style.opacity = "0";
+    }
+
+    snapResetTimer = setTimeout(function () {
+      snapResetTimer = null;
+      finalizeSheetClose();
+    }, 300);
+  }
+
+  function endDrag(e) {
+    if (e && drag.pointerId !== null && e.pointerId !== drag.pointerId) return;
+
+    stopSheetDragTracking();
+    if (!drag.active) return;
+
+    var releaseY = e ? e.clientY : drag.startY + drag.currentY;
+    var dy = Math.max(drag.currentY, Math.max(0, releaseY - drag.startY));
+    drag.currentY = dy;
+    drag.active = false;
+    drag.pointerId = null;
+    clearSnapResetTimer();
+    sheet.classList.remove("is-dragging");
+
+    if (dy < 4) {
+      resetPanelTransform();
+      return;
+    }
+
+    var threshold = Math.max(36, drag.panelHeight * 0.15);
+    if (dy >= threshold) {
+      closeSheetFromDrag();
+      return;
+    }
+
+    snapPanelOpen();
+  }
+
+  function onSheetPointerEnd(e) {
+    endDrag(e);
+  }
+
+  function onSheetPointerDown(e) {
+    if (!sheet.classList.contains("is-open") || !isMobile()) return;
+    if (!canStartDrag(e.target)) return;
+    if (e.pointerType === "mouse" && e.button !== 0) return;
+
+    clearSnapResetTimer();
+    stopSheetDragTracking();
+
+    drag.active = true;
+    drag.pointerId = e.pointerId;
+    drag.startY = e.clientY;
+    drag.currentY = 0;
+    drag.panelHeight = panel.offsetHeight || 300;
+    sheet.classList.add("is-dragging");
+
+    document.addEventListener("pointermove", onSheetPointerMove, { passive: false });
+    document.addEventListener("pointerup", onSheetPointerEnd);
+    document.addEventListener("pointercancel", onSheetPointerEnd);
+  }
+
+  function onSheetPointerMove(e) {
+    if (!drag.active || e.pointerId !== drag.pointerId) return;
+
+    var dy = Math.max(0, e.clientY - drag.startY);
+    drag.currentY = dy;
+    applyDragOffset(dy, false);
+    if (dy > 0 && e.cancelable) e.preventDefault();
+  }
+
+  function openSheet(e) {
+    if (e) {
+      if (e.cancelable) e.preventDefault();
+      e.stopPropagation();
+    }
+    if (!isMobile() || sheet.classList.contains("is-open")) return;
+
+    if (sheetCloseTimer) {
+      clearTimeout(sheetCloseTimer);
+      sheetCloseTimer = null;
+    }
+    if (backdropReadyTimer) {
+      clearTimeout(backdropReadyTimer);
+      backdropReadyTimer = null;
+    }
+    clearSnapResetTimer();
+    stopSheetDragTracking();
+    setBackdropReady(false);
+    sheetOpening = true;
+    mountConfigMobile();
+    resetPanelTransform();
+    sheet.hidden = false;
+    sheet.setAttribute("aria-hidden", "false");
+    openBtn.setAttribute("aria-expanded", "true");
+    if (panel) {
+      panel.setAttribute("role", "dialog");
+      panel.setAttribute("aria-modal", "true");
+    }
+
+    requestAnimationFrame(function () {
+      requestAnimationFrame(function () {
+        sheet.classList.add("is-open");
+        lockSheetScroll();
+        sheetOpening = false;
+        backdropReadyTimer = setTimeout(function () {
+          backdropReadyTimer = null;
+          if (sheet.classList.contains("is-open")) {
+            setBackdropReady(true);
+          }
+        }, BACKDROP_DELAY_MS);
+      });
+    });
+  }
+
+  function closeSheet(immediate) {
+    if (!sheet.classList.contains("is-open")) return;
+
+    if (backdropReadyTimer) {
+      clearTimeout(backdropReadyTimer);
+      backdropReadyTimer = null;
+    }
+    setBackdropReady(false);
+    clearSnapResetTimer();
+    stopSheetDragTracking();
+    sheetOpening = false;
+    drag.active = false;
+    drag.pointerId = null;
+    sheet.classList.remove("is-dragging");
+    resetPanelTransform();
+
+    sheet.classList.remove("is-open");
+    sheet.setAttribute("aria-hidden", "true");
+    openBtn.setAttribute("aria-expanded", "false");
+    if (panel) {
+      panel.removeAttribute("role");
+      panel.removeAttribute("aria-modal");
+    }
+    unlockSheetScroll();
+    releaseOpenBtnFocus();
+
+    if (sheetCloseTimer) clearTimeout(sheetCloseTimer);
+    if (immediate) {
+      sheet.hidden = true;
+      return;
+    }
+    sheetCloseTimer = setTimeout(function () {
+      sheetCloseTimer = null;
+      if (!sheet.classList.contains("is-open")) {
+        sheet.hidden = true;
+      }
+    }, SHEET_MS);
+  }
+
+  openBtn.addEventListener("click", openSheet);
+
+  if (dragZone) {
+    dragZone.addEventListener("pointerdown", onSheetPointerDown);
+  }
+
+  if (backdrop) {
+    backdrop.addEventListener("click", function () {
+      if (!backdropReady || !sheet.classList.contains("is-open")) return;
+      closeSheet();
+    });
+  }
+
+  document.addEventListener("keydown", function (e) {
+    if (e.key === "Escape" && sheet.classList.contains("is-open")) {
+      closeSheet();
+    }
+  });
+
+  mq.addEventListener("change", function () {
+    if (sheetOpening) return;
+    if (sheet.classList.contains("is-open") && !isMobile()) {
+      closeSheet();
+    }
+    scheduleSyncConfigPlacement();
+  });
+
+  syncConfigPlacement();
+})();
+
 (function initProductQty() {
   function setPressed(btn, on) {
     btn.classList.toggle("is-pressed", on);

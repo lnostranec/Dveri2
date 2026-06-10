@@ -10,7 +10,7 @@
       href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap"
       rel="stylesheet"
     />
-    <link rel="stylesheet" href="style.css?v=378" />
+    <link rel="stylesheet" href="style.css?v=441" />
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css" />
   </head>
   <body id="top" class="page-catalog page-product">
@@ -198,6 +198,15 @@
               <div class="door-product-detail__figure">
                 <img class="door-product-detail__hero-img" src="assets/Light3.webp" width="305" height="626" alt="Лайт 01" />
               </div>
+              <button
+                type="button"
+                class="door-product-detail__config-open"
+                id="doorProductConfigOpen"
+                aria-controls="doorProductConfigSheet"
+                aria-expanded="false"
+              >
+                Выбрать модель и материал
+              </button>
               <div class="door-product-detail__separator" aria-hidden="true"></div>
               <div class="door-product-detail__buy">
                 <p class="door-product-detail__price">25&nbsp;799&nbsp;₽</p>
@@ -223,7 +232,8 @@
               </div>
             </div>
 
-            <div class="door-product-detail__config door-product-config" data-door-product-config>
+            <div class="door-product-config-host" id="doorProductConfigHost">
+                <div class="door-product-detail__config door-product-config" data-door-product-config>
               <div class="door-product-config__tabs" role="tablist" aria-label="Конфигурация двери">
                 <button type="button" class="door-product-config__tab is-active" role="tab" aria-selected="true" data-tab="model">Модель</button>
                 <button type="button" class="door-product-config__tab" role="tab" aria-selected="false" data-tab="material">Материал и цвет</button>
@@ -368,6 +378,7 @@
                   <p class="door-product-config__placeholder">Раздел в разработке.</p>
                 </div>
               </div>
+                </div>
             </div>
           </div>
         </div>
@@ -497,7 +508,17 @@
       <button type="button" class="cookie-banner__btn" id="cookieBannerAccept">Принимаю</button>
     </div>
 
+    <div class="door-product-config-sheet" id="doorProductConfigSheet" hidden aria-hidden="true">
+      <div class="door-product-config-sheet__backdrop" tabindex="-1" aria-hidden="true"></div>
+      <div class="door-product-config-sheet__panel" aria-label="Выбор модели и материала">
+        <div class="door-product-config-sheet__drag" aria-hidden="true">
+          <div class="door-product-config-sheet__handle"></div>
+        </div>
+        <div class="door-product-config-sheet__body" id="doorProductConfigSheetBody"></div>
+      </div>
+    </div>
+
     <script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js" defer></script>
-    <script src="main.js?v=29" defer></script>
+    <script src="main.js?v=64" defer></script>
   </body>
 </html>
