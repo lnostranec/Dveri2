@@ -1260,11 +1260,17 @@
 
   function setHeroFromVariant(btn) {
     if (!heroImg || !btn) return;
+    if (btn.querySelector(".door-product-variant__img--empty")) return;
     var thumb = btn.querySelector(".door-product-variant__img img");
-    if (!thumb || !thumb.getAttribute("src")) return;
-    heroImg.src = thumb.src;
-    var alt = thumb.getAttribute("alt");
+    var heroSrc = btn.getAttribute("data-hero-src") || (thumb && (thumb.currentSrc || thumb.src));
+    if (!heroSrc) return;
+    heroImg.removeAttribute("width");
+    heroImg.removeAttribute("height");
+    var alt = btn.getAttribute("data-hero-alt") || (thumb && thumb.getAttribute("alt"));
     if (alt) heroImg.alt = alt;
+    if (heroImg.src !== heroSrc) {
+      heroImg.src = heroSrc;
+    }
   }
 
   var initialActive = root.querySelector(".door-product-variant.is-active");
