@@ -1037,6 +1037,7 @@
       root.removeAttribute("hidden");
       root.setAttribute("aria-hidden", "false");
       openBtn.setAttribute("aria-expanded", "true");
+      syncCatalogLabelState();
       document.body.classList.add("catalog-mega-open");
       document.documentElement.classList.add("catalog-mega-open");
       clearPrimaryActive();
@@ -1058,6 +1059,7 @@
       root.classList.remove("is-open");
       root.setAttribute("aria-hidden", "true");
       openBtn.setAttribute("aria-expanded", "false");
+      syncCatalogLabelState();
       document.body.classList.remove("catalog-mega-open");
       document.documentElement.classList.remove("catalog-mega-open");
       root.removeAttribute("data-mega-hide-main");
@@ -1081,12 +1083,30 @@
     setOpen(!isOpen());
   }
 
-  openBtn.addEventListener("click", function (e) {
-    if (mq.matches) {
-      e.preventDefault();
-      toggle();
-    }
-  });
+  function syncCatalogLabelState() {
+    var catalogLabel = document.querySelector(".site-header__start .nav__catalog-text");
+    if (!catalogLabel) return;
+    var expanded = openBtn.getAttribute("aria-expanded") === "true";
+    catalogLabel.setAttribute("aria-expanded", expanded ? "true" : "false");
+  }
+
+  function onCatalogTrigger(e) {
+    if (!mq.matches) return;
+    e.preventDefault();
+    e.stopPropagation();
+    toggle();
+  }
+
+  openBtn.addEventListener("click", onCatalogTrigger);
+
+  var catalogLabel = document.querySelector(".site-header__start .nav__catalog-text");
+  if (catalogLabel) {
+    catalogLabel.setAttribute("role", "button");
+    catalogLabel.setAttribute("aria-haspopup", "true");
+    catalogLabel.setAttribute("aria-controls", "catalogMega");
+    catalogLabel.setAttribute("aria-expanded", "false");
+    catalogLabel.addEventListener("click", onCatalogTrigger);
+  }
 
   var backdrop = root.querySelector(".catalog-mega__backdrop");
   if (backdrop) {
@@ -1112,15 +1132,6 @@
     headerLogo.addEventListener("click", function (e) {
       if (mq.matches && isOpen()) {
         e.preventDefault();
-        setOpen(false);
-      }
-    });
-  }
-
-  var catalogLabel = document.querySelector(".brand .nav__catalog-text");
-  if (catalogLabel) {
-    catalogLabel.addEventListener("click", function () {
-      if (mq.matches) {
         setOpen(false);
       }
     });

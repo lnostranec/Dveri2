@@ -344,20 +344,30 @@ button {
 }
 
 .nav__catalog-btn:hover .nav__catalog-icon__circle,
-.nav__catalog-btn:focus-visible .nav__catalog-icon__circle {
+.nav__catalog-btn:focus-visible .nav__catalog-icon__circle,
+.brand:has(.nav__catalog-text:hover) .nav__catalog-icon__circle,
+.brand:has(.nav__catalog-text:focus-visible) .nav__catalog-icon__circle {
   fill: var(--accent-hot);
 }
 
-.nav__catalog-text {
-  flex-shrink: 0;
-  margin-left: var(--header-catalog-gap);
-  font-family: var(--font);
-  font-size: var(--header-nav-font-size);
-  font-weight: var(--header-nav-font-weight);
-  line-height: var(--header-nav-line-height);
-  color: var(--ink-nav);
-  transition: color 0.3s ease;
+.brand:has(.nav__catalog-btn:hover) .nav__catalog-text,
+.brand:has(.nav__catalog-btn:focus-visible) .nav__catalog-text {
+  color: var(--accent-hot);
 }
+
+  .nav__catalog-text {
+    flex-shrink: 0;
+    position: relative;
+    z-index: 2;
+    margin-left: var(--header-catalog-gap);
+    font-family: var(--font);
+    font-size: var(--header-nav-font-size);
+    font-weight: var(--header-nav-font-weight);
+    line-height: var(--header-nav-line-height);
+    color: var(--ink-nav);
+    cursor: pointer;
+    transition: color 0.3s ease;
+  }
 
 .header-tools {
   display: flex;
@@ -2568,6 +2578,13 @@ html.is-scroll-locked .site-header {
   }
 }
 
+@media (min-width: 901px) {
+  .site-header__start .nav__catalog-text {
+    display: inline-flex;
+    align-items: center;
+  }
+}
+
 @media (max-width: 1100px) and (min-width: 769px) {
   :root {
     --header-nav-font-size: 12px;
@@ -2645,10 +2662,6 @@ html.is-scroll-locked .site-header {
   .logo__img {
     width: 76px;
     height: 32px;
-  }
-
-  .header-tools__search {
-    display: none;
   }
 }
 
