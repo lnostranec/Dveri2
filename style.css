@@ -1335,7 +1335,7 @@ html.is-scroll-locked .site-header {
   height: 100%;
   max-width: 100%;
   max-height: 100%;
-  object-fit: cover;
+  object-fit: contain;
   object-position: center center;
   pointer-events: none;
   -webkit-user-drag: none;
@@ -1425,13 +1425,15 @@ html.is-scroll-locked .site-header {
     --hero-title-gap: clamp(6px, 0.95vh, 11px);
     --hero-title-gap-last: clamp(16px, 3vh, 44px);
     --hero-lead-gap: clamp(10px, 1.5vh, 22px);
-    --hero-media-gap: clamp(12px, 2.2vh, 43px);
+    --hero-media-gap: 43px;
     --hero-lead-size: clamp(14px, 1.85vh, 20px);
     --hero-caption-inset: clamp(14px, 2vh, 28px);
     --hero-pad-top: clamp(24px, 3.5vh, 49px);
   }
 
   .hero-intro__grid {
+    container-type: inline-size;
+    container-name: hero-intro;
     min-height: var(--hero-block-max-h);
     height: auto;
     max-height: none;
@@ -1444,34 +1446,45 @@ html.is-scroll-locked .site-header {
     align-items: stretch;
     box-sizing: border-box;
     --hero-grid-content-h: calc(var(--hero-block-max-h) - var(--section-gap-to-rule) - 1px);
+    --hero-feature-col-w: calc((100cqw - var(--hero-col-gap)) * 512 / 1000 - 15px);
+    --hero-feature-h: min(
+      calc(var(--hero-feature-col-w) * 923 / 954),
+      var(--hero-grid-content-h)
+    );
   }
 
   .hero-intro__left {
-    display: grid;
-    grid-template-rows: auto auto minmax(0, 1fr);
-    min-height: var(--hero-grid-content-h);
-    height: auto;
-    max-height: none;
+    display: flex;
+    flex-direction: column;
+    height: var(--hero-feature-h);
+    min-height: var(--hero-feature-h);
+    max-height: var(--hero-feature-h);
     min-width: 0;
-    align-self: stretch;
+    align-self: start;
   }
 
   .hero-intro__copy {
+    flex: 0 0 auto;
     min-height: 0;
     min-width: 0;
   }
 
   .hero-intro__lead {
+    flex: 0 0 auto;
+    margin-top: auto;
+    margin-bottom: var(--hero-media-gap);
     white-space: normal;
+    transform: translateY(3px);
   }
 
   .hero-intro__media {
-    min-height: 0;
-    height: 100%;
+    flex: 0 0 auto;
+    height: min(var(--hero-media-h), calc(var(--hero-feature-h) * 0.55));
     width: 100%;
     max-width: min(var(--hero-media-w), 100%);
-    aspect-ratio: var(--hero-media-ratio);
-    align-self: stretch;
+    aspect-ratio: auto;
+    align-self: start;
+    min-height: 0;
   }
 
   .hero-intro__feature {
@@ -1480,12 +1493,13 @@ html.is-scroll-locked .site-header {
     position: relative;
     box-sizing: border-box;
     width: 100%;
+    max-width: 100%;
     min-width: 0;
-    height: auto;
+    height: var(--hero-feature-h);
     max-height: var(--hero-grid-content-h);
-    aspect-ratio: var(--hero-feature-ratio);
+    aspect-ratio: auto;
     justify-self: stretch;
-    align-self: end;
+    align-self: start;
     overflow: hidden;
   }
 
@@ -1499,6 +1513,11 @@ html.is-scroll-locked .site-header {
 
   .hero-intro__feature-slide {
     inset: 0;
+  }
+
+  .hero-intro__feature-slide img {
+    object-fit: fill;
+    object-position: center center;
   }
 }
 
